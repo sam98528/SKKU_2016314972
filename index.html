@@ -52,8 +52,8 @@
     </div>  
   </div>
 
-  <script src="/library/lib/jquery-3.1.1.min.js"></script>
-  <script src="/dist/hanzilookup.min.js"></script>
+  <script src="./library/lib/jquery-3.1.1.min.js"></script>
+  <script src="./dist/hanzilookup.min.js"></script>
   <script>
     var hanziLookupDemoApp = (function () {
       var _filesToLoad;
@@ -62,8 +62,8 @@
       $(document).ready(function () {
         // Only fetch data (large, takes long) when the page has loaded
         _filesToLoad = 2;
-        HanziLookup.init("mmah", "/dist/mmah.json", fileLoaded);
-        HanziLookup.init("orig", "/dist/orig.json", fileLoaded);
+        HanziLookup.init("mmah", "./dist/mmah.json", fileLoaded);
+        HanziLookup.init("orig", "./dist/orig.json", fileLoaded);
       });
 
       // Initializes mini-app once all scripts have loaded
