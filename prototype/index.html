@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Final Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { background-color: #fafafa; font-family: Verdana, sans-serif; padding-top: 0%; }
+    div, h1, h2 { position: relative; float: left; box-sizing: border-box; height: auto; overflow: auto; width: 100%; margin: 0; }
+    h1 { margin-bottom: 8px; }
+    h2 { font-weight: normal; }
+    .content, .header { 
+      width: 100%; max-width: 1200px; margin: 0 auto; float: none; background-color: #6688aa; padding: 0%; color: #f0f0f0;
+      border-radius: 8px;
+    }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header a { color: #fce566; text-decoration: none; }
+    .top { width: 100%; float: none; margin: 0;}
+    .bottom { width: 100%; float: none; margin: 0; }
+    .drawingBoard { width: 90%; height: 50%; cursor: crosshair; clear: both; overflow: hidden; background-color: #fafafa; }
+    .drawingBoard span { display: none; }
+    .drawingBoard.loading { background-color: #f0f0f0; }
+    .drawingBoard.loading span { display: inline; color: #606060; }
+    .commands { width: 250px; margin-top: 3px; }
+    .cmd { width: 122px; background-color: #fce7c0; text-align: center; cursor: default; padding: 3px; color: #606060; }
+    .cmd.cmdUndo { float: right; }
+    .cmd:hover { background-color: #f1d7a6; }
+    .charPicker { 
+      border: 1px solid #a0a0a0; padding: 3px; height: 70px; width: 400px; font-size: 48px; background-color: #fafafa; overflow: hidden; 
+      color: #606060;
+    }
+    .charPicker span { cursor: default; }
+    .hanziLookupChars { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div class="top">
+      <h1>Stroke input</h1>
+      <div class="drawingBoard loading"><span>Loading...</span></div>
+      <div class="commands">
+        <div class="cmd cmdUndo">Undo</div>
+        <div class="cmd cmdClear">Clear</div><br/>
+      </div>
+    </div>
+    <div class="bottom">
+      <h1>Recognized characters</h1>
+      <h2>Original HanziLookup data</h2>
+      <div class="charPicker hanziLookupChars"></div>
+      <h2>Make Me a Hanzi data</h2>
+      <div class="charPicker mmahLookupChars"></div>
+    </div>  
+  </div>
+
+  <script src="./assets/js/jquery-3.1.1.min.js"></script>
+  <script src="./assets/js/hanzilookup.min.js"></script>
+  <script>
+    var hanziLookupDemoApp = (function () {
+      var _filesToLoad;
+      var _drawingBoard;
+
+      $(document).ready(function () {
+        _filesToLoad = 2;
+        HanziLookup.init("mmah", "./assets/json/mmah.json", fileLoaded);
+        HanziLookup.init("orig", "./assets/json/orig.json", fileLoaded);
+      });
+      function fileLoaded(success) {
+        if (!success) {
+          _filesToLoad = -1;
+          $(".drawingBoard span").text("Failed to load data.");
+          return;
+        }
+        --_filesToLoad;
+        if (_filesToLoad != 0) return;
+        $(".drawingBoard").removeClass("loading");
+        _drawingBoard = HanziLookup.DrawingBoard($(".drawingBoard").first(), lookup);
+        $(".cmdUndo").click(function (evt) {
+          _drawingBoard.undoStroke();
+          _drawingBoard.redraw();
+          lookup();
+        });
+        $(".cmdClear").click(function (evt) {
+          _drawingBoard.clearCanvas();
+          _drawingBoard.redraw();
+          lookup();
+        });
+      }
+
+      function lookup() {
+        var analyzedChar = new HanziLookup.AnalyzedCharacter(_drawingBoard.cloneStrokes());
+        var matcherOrig = new HanziLookup.Matcher("orig");
+        matcherOrig.match(analyzedChar, 8, function(matches) {
+          showResults($(".hanziLookupChars"), matches);
+        });
+        var matcherMMAH = new HanziLookup.Matcher("mmah");
+        matcherMMAH.match(analyzedChar, 8, function(matches) {
+          showResults($(".mmahLookupChars"), matches);
+        });
+      }
+      function showResults(elmHost, matches) {
+        elmHost.html("");
+        for (var i = 0; i != matches.length; ++i) {
+          elmHost.append("<span>" + matches[i].character + "</span>");
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
